@@ -9,28 +9,25 @@ has 'password'  => (is => 'rw', isa => 'Str', required => 1);
 
 use Test::More;
 use DBI;
-#use Test::Deep;
+use Test::Deep;
+use Data::Dumper;
 
 my $app = My::App->new_with_options();
-ok 1;
 note "server "   . $app->server;
 note "username " . $app->username;
 
-done_testing();
-
-__END__
-
-my $dbh      = DBI->connect("dbi:Sybase:server=$server;", $user, $password, { ChopBlanks => 1 } ); 
+my $dsn = sprintf("dbi:%s:server=%s;","Sybase",$app->server);
+note "dsn $dsn";
+my $dbh = DBI->connect($dsn, $app->username, $app->password, { ChopBlanks => 1 } ) or die "oops: $@ $!\n";
 
 my $before_insert = _get_table_counts();
 diag "do db changes";
 my $wait = <>;
 my $after_insert = _get_table_counts();
 #The only changes should be ..
-#$before_insert->{table_foo}++;
-#cmp_deeply ($after_insert, $before_insert);
-#is_deeply($have, $want) or diag explain $have;
-
+#$before_insert->{...}++;
+is_deeply($after_insert, $before_insert);# or diag explain $have;
+done_testing();
 exit;
 
 sub _get_table_counts {
